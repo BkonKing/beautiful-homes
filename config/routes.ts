@@ -30,22 +30,6 @@ export default [
             component: './Welcome',
           },
           {
-            path: '/admin',
-            name: 'admin',
-            icon: 'crown',
-            component: './Admin',
-            authority: ['admin'],
-            routes: [
-              {
-                path: '/admin/sub-page',
-                name: 'sub-page',
-                icon: 'smile',
-                component: './Welcome',
-                authority: ['admin'],
-              },
-            ],
-          },
-          {
             name: 'list.table-list',
             icon: 'table',
             path: '/list',
@@ -63,6 +47,20 @@ export default [
                 component: '@/pages/SystemMenuList',
               }
             ]
+          },
+          {
+            name: 'account',
+            icon: 'user',
+            path: '/account',
+            hideInMenu:true,
+            routes: [
+              {
+                name: 'settings',
+                icon: 'smile',
+                path: '/account/settings',
+                component: './account/settings',
+              },
+            ],
           },
           {
             component: './404',

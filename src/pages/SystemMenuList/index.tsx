@@ -10,7 +10,7 @@ import { menuItem } from './data.d';
 import { getMenuList, queryRule, updateRule, addRule, removeRule } from './service';
 
 /**
- * 添加节点
+ * 添加菜单
  * @param fields
  */
 const handleAdd = async (fields: menuItem) => {
@@ -189,7 +189,7 @@ const TableList: React.FC<{}> = () => {
             </span> */}
           </div>
         )}
-        request={() => getMenuList()}
+        request={() => getMenuList().then(({data}) => data.records)}
         columns={columns}
         rowSelection={{}}
       />

@@ -1,7 +1,7 @@
 import request from '@/utils/request';
 import { menuItem } from './data';
 
-export async function getMenuList(): Promise<any> {
+export async function getMenuList() {
   return request('/system/menu/getMenuList');
 }
 

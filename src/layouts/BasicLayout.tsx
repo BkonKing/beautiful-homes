@@ -17,16 +17,9 @@ import Authorized from '@/utils/Authorized';
 import RightContent from '@/components/GlobalHeader/RightContent';
 import { ConnectState } from '@/models/connect';
 import { getAuthorityFromRouter } from '@/utils/utils';
-import logo from '../assets/logo.svg'; // const [menuData, setMenuData] = useState([]);
-// useEffect(() => {
-//   // 这里是一个演示用法
-//   // 真实项目中建议使用 dva dispatch 或者 umi-request
-//   fetch('/api/example.json')
-//     .then(response => response.json())
-//     .then(data => {
-//       setMenuData(data || []);
-//     });
-// }, []);
+import logo from '../assets/logo.svg';
+
+// const [menuData, setMenuData] = useState([]);
 
 const noMatch = (
   <Result
@@ -56,7 +49,7 @@ export type BasicLayoutContext = { [K in 'location']: BasicLayoutProps[K] } & {
   };
 };
 /**
- * use Authorized check all menu item
+ * 使用Authorized检查所有菜单项
  */
 
 const menuDataRender = (menuList: MenuDataItem[]): MenuDataItem[] =>
@@ -112,12 +105,19 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
       dispatch({
         type: 'user/fetchCurrent',
       });
+      // 这里是一个演示用法
+      // 真实项目中建议使用 dva dispatch 或者 umi-request
+      // fetch('/api/example.json')
+      //   .then(response => response.json())
+      //   .then(data => {
+      //     setMenuData(data || []);
+      //   });
     }
   }, []);
-  /**
-   * init variables
-   */
 
+  /**
+   * 初始化菜单折叠变量
+   */
   const handleMenuCollapse = (payload: boolean): void => {
     if (dispatch) {
       dispatch({
@@ -125,8 +125,9 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         payload,
       });
     }
-  }; // get children authority
+  };
 
+  // get children authority
   const authorized = getAuthorityFromRouter(props.route.routes, location.pathname || '/') || {
     authority: undefined,
   };
@@ -159,8 +160,8 @@ const BasicLayout: React.FC<BasicLayoutProps> = (props) => {
         return first ? (
           <Link to={paths.join('/')}>{route.breadcrumbName}</Link>
         ) : (
-          <span>{route.breadcrumbName}</span>
-        );
+            <span>{route.breadcrumbName}</span>
+          );
       }}
       footerRender={() => defaultFooterDom}
       menuDataRender={menuDataRender}

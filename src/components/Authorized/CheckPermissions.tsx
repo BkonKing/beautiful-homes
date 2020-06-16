@@ -12,11 +12,10 @@ export type IAuthorityType =
 
 /**
  * 通用权限检查方法
- * Common check permissions method
- * @param { 权限判定 | Permission judgment } authority
- * @param { 你的权限 | Your permission description } currentAuthority
- * @param { 通过的组件 | Passing components } target
- * @param { 未通过的组件 | no pass components } Exception
+ * @param { 权限判定，开放的权限数组 } authority
+ * @param { 你的权限 } currentAuthority
+ * @param { 通过的组件 } target
+ * @param { 未通过的组件 } Exception
  */
 const checkPermissions = <T, K>(
   authority: IAuthorityType,
@@ -25,10 +24,10 @@ const checkPermissions = <T, K>(
   Exception: K,
 ): T | K | React.ReactNode => {
   // 没有判定权限.默认查看所有
-  // Retirement authority, return target;
   if (!authority) {
     return target;
   }
+  // authority各种类型的情况的判断处理
   // 数组处理
   if (Array.isArray(authority)) {
     if (Array.isArray(currentAuthority)) {

@@ -14,10 +14,10 @@ export const isComponentClass = (component: React.ComponentClass | React.ReactNo
   return isComponentClass(proto);
 };
 
-// Determine whether the incoming component has been instantiated
-// AuthorizedRoute is already instantiated
-// Authorized  render is already instantiated, children is no instantiated
-// Secured is not instantiated
+// 确定传入组件是否已实例化
+// AuthorizedRoute已经实例化
+// Authorized render已经实例化, children未实例化
+// Secured未实例化
 const checkIsInstantiation = (target: React.ComponentClass | React.ReactNode) => {
   if (isComponentClass(target)) {
     const Target = target as React.ComponentClass;
@@ -46,9 +46,9 @@ const checkIsInstantiation = (target: React.ComponentClass | React.ReactNode) =>
  */
 const authorize = (authority: string, error?: React.ReactNode) => {
   /**
-   * conversion into a class
+   * 转换为class
    * 防止传入字符串时找不到staticContext造成报错
-   * String parameters can cause staticContext not found error
+   * 字符串参数可能导致staticContext not found error
    */
   let classError: boolean | React.FunctionComponent = false;
   if (error) {

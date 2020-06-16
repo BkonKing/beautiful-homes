@@ -4,7 +4,7 @@ import { getAuthority } from './authority';
 /* eslint-disable import/no-mutable-exports */
 let Authorized = RenderAuthorize(getAuthority());
 
-// Reload the rights component
+// 重新加载权限组件
 const reloadAuthorized = (): void => {
   Authorized = RenderAuthorize(getAuthority());
 };
