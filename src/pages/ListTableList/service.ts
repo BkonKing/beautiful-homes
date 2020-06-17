@@ -6,13 +6,13 @@ export async function getMenuList(): Promise<any> {
 }
 
 export async function queryRule(params?: menuItem) {
-  return request('/api/rule', {
+  return request('/rule', {
     params,
   });
 }
 
 export async function removeRule(params: { key: number[] }) {
-  return request('/api/rule', {
+  return request('/rule', {
     method: 'POST',
     data: {
       ...params,
@@ -22,7 +22,7 @@ export async function removeRule(params: { key: number[] }) {
 }
 
 export async function addRule(params: menuItem) {
-  return request('/api/rule', {
+  return request('/rule', {
     method: 'POST',
     data: {
       ...params,
@@ -32,7 +32,7 @@ export async function addRule(params: menuItem) {
 }
 
 export async function updateRule(params: menuItem) {
-  return request('/api/rule', {
+  return request('/rule', {
     method: 'POST',
     data: {
       ...params,

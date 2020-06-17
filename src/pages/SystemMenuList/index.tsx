@@ -1,13 +1,15 @@
-import { DownOutlined, PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Dropdown, Menu, message, Input } from 'antd';
+import { DownOutlined, PlusOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Button, Divider, Dropdown, Menu, message, Modal, Form, Upload } from 'antd';
 import React, { useState, useRef } from 'react';
 import { PageHeaderWrapper } from '@ant-design/pro-layout';
 import ProTable, { ProColumns, ActionType } from '@ant-design/pro-table';
+import { FormInstance } from 'antd/lib/form';
 
 import CreateForm from './components/CreateForm';
-import UpdateForm, { FormValueType } from './components/UpdateForm';
 import { menuItem } from './data.d';
-import { getMenuList, queryRule, updateRule, addRule, removeRule } from './service';
+import { getMenuList, addMenu, deleteMenu, updateMenu } from './service';
+
+const { confirm } = Modal
 
 /**
  * 添加菜单
@@ -16,7 +18,7 @@ import { getMenuList, queryRule, updateRule, addRule, removeRule } from './servi
 const handleAdd = async (fields: menuItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addRule({ ...fields });
+    await addMenu({ ...fields });
     hide();
     message.success('添加成功');
     return true;
@@ -31,118 +33,157 @@ const handleAdd = async (fields: menuItem) => {
  * 更新节点
  * @param fields
  */
-// const handleUpdate = async (fields: FormValueType) => {
-//   const hide = message.loading('正在配置');
-//   try {
-//     await updateRule({
-//       name: fields.name,
-//       desc: fields.desc,
-//       key: fields.key,
-//     });
-//     hide();
+const handleUpdate = async (fields: menuItem) => {
+  const hide = message.loading('正在配置');
+  try {
+    await updateMenu(fields);
+    hide();
 
-//     message.success('配置成功');
-//     return true;
-//   } catch (error) {
-//     hide();
-//     message.error('配置失败请重试！');
-//     return false;
-//   }
-// };
+    message.success('配置成功');
+    return true;
+  } catch (error) {
+    hide();
+    message.error('配置失败请重试！');
+    return false;
+  }
+};
 
 /**
  *  删除节点
  * @param selectedRows
  */
-// const handleRemove = async (selectedRows: menuItem[]) => {
-//   const hide = message.loading('正在删除');
-//   if (!selectedRows) return true;
-//   try {
-//     await removeRule({
-//       key: selectedRows.map((row) => row.key),
-//     });
-//     hide();
-//     message.success('删除成功，即将刷新');
-//     return true;
-//   } catch (error) {
-//     hide();
-//     message.error('删除失败，请重试');
-//     return false;
-//   }
-// };
+const handleRemove = async (selectedRows: menuItem[]) => {
+  const hide = message.loading('正在删除');
+  const id = selectedRows.map((row) => row.id)
+  if (!selectedRows) return true;
+  try {
+    await deleteMenu({
+      id,
+    });
+    hide();
+    message.success('删除成功，即将刷新');
+    return true;
+  } catch (error) {
+    hide();
+    message.error('删除失败，请重试');
+    return false;
+  }
+};
+
+/**
+ * 删除提示
+ * @param selectedRows
+ */
+const removeConfirm = (selectedRows: menuItem[]) => {
+  return new Promise((resolve, reject) => {
+    confirm({
+      title: '是否删除当前菜单?',
+      icon: <ExclamationCircleOutlined />,
+      okText: '确定',
+      cancelText: '取消',
+      content: '删除后将无法还原，请谨慎处理',
+      async onOk() {
+        await handleRemove(selectedRows)
+        resolve()
+      },
+      onCancel() {
+        reject()
+      },
+    });
+  })
+}
+
+const tableDataManage = async () => {
+  return getMenuList().then(({ data }) => {
+    const columnData = data.records.map((col: ProColumns<menuItem>) => {
+      const keyData = col
+      keyData.key = col.id
+      return keyData
+    })
+    return {
+      current: 1,
+      pageSize: "20",
+      success: true,
+      data: columnData,
+      total: 100
+    }
+  })
+}
 
 const TableList: React.FC<{}> = () => {
   const [createModalVisible, handleModalVisible] = useState<boolean>(false);
-  const [updateModalVisible, handleUpdateModalVisible] = useState<boolean>(false);
-  const [stepFormValues, setStepFormValues] = useState({});
   const actionRef = useRef<ActionType>();
+  const formRef = useRef<FormInstance>();
+  const showEditModal = (item: Partial<menuItem>) => {
+    handleModalVisible(true);
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.setFieldsValue(item);
+      }
+    }, 0);
+  };
   const columns: ProColumns<menuItem>[] = [
     {
-      title: '规则名称',
-      dataIndex: 'name',
+      title: '菜单名称',
+      dataIndex: 'menu_text',
       rules: [
         {
           required: true,
-          message: '规则名称为必填项',
+          message: '菜单名称为必填项',
         },
       ],
     },
     {
-      title: '描述',
-      dataIndex: 'desc',
-      valueType: 'textarea',
+      title: '菜单图标',
+      dataIndex: 'icon',
+      hideInSearch: true,
+      render: (_) => (
+        <img width="30" src={String(_)} alt="菜单图标" />
+      ),
+      // renderFormItem: (_, { type, defaultRender, ...rest }, form) => {
+      //   if (type !== 'form') {
+      //     return null;
+      //   }
+      //   const status = form.getFieldValue('icon');
+      //   if (!status) {
+      //     return <input type="file" placeholder="请输入" />;
+      //   }
+      //   return defaultRender(_);
+      // }
     },
     {
-      title: '服务调用次数',
-      dataIndex: 'callNo',
-      sorter: true,
-      hideInForm: true,
-      renderText: (val: string) => `${val} 万`,
+      title: '排序',
+      dataIndex: 'list_order',
+      hideInSearch: true,
+      valueType: 'digit'
     },
     {
-      title: '状态',
-      dataIndex: 'status',
-      hideInForm: true,
+      title: '是否显示',
+      dataIndex: 'display',
       valueEnum: {
-        0: { text: '关闭', status: 'Default' },
-        1: { text: '运行中', status: 'Processing' },
-        2: { text: '已上线', status: 'Success' },
-        3: { text: '异常', status: 'Error' },
-      },
-    },
-    {
-      title: '上次调度时间',
-      dataIndex: 'updatedAt',
-      sorter: true,
-      valueType: 'dateTime',
-      hideInForm: true,
-      renderFormItem: (item, { defaultRender, ...rest }, form) => {
-        const status = form.getFieldValue('status');
-        if (`${status}` === '0') {
-          return false;
-        }
-        if (`${status}` === '3') {
-          return <Input {...rest} placeholder="请输入异常原因！" />;
-        }
-        return defaultRender(item);
+        0: { text: '否' },
+        1: { text: '是' }
       },
     },
     {
       title: '操作',
       dataIndex: 'option',
       valueType: 'option',
-      render: (_, record) => (
+      render: (_, record, index, action) => (
         <>
           <a
             onClick={() => {
-              handleUpdateModalVisible(true);
-              setStepFormValues(record);
+              showEditModal(record);
             }}
           >
-            配置
+            修改
           </a>
           <Divider type="vertical" />
-          <a href="">订阅警报</a>
+          <a onClick={() => {
+            removeConfirm([record]).then(() => {
+              action.reload();
+            }).catch(() => { });
+          }}>删除</a>
         </>
       ),
     },
@@ -157,21 +198,21 @@ const TableList: React.FC<{}> = () => {
         toolBarRender={(action, { selectedRows }) => [
           <Button type="primary" onClick={() => handleModalVisible(true)}>
             <PlusOutlined /> 新建
-          </Button>,
+            </Button>,
           selectedRows && selectedRows.length > 0 && (
             <Dropdown
               overlay={
                 <Menu
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     if (e.key === 'remove') {
-                      // await handleRemove(selectedRows);
-                      action.reload();
+                      removeConfirm(selectedRows).then(() => {
+                        action.reload();
+                      }).catch(() => { });
                     }
                   }}
                   selectedKeys={[]}
                 >
                   <Menu.Item key="remove">批量删除</Menu.Item>
-                  <Menu.Item key="approval">批量审批</Menu.Item>
                 </Menu>
               }
             >
@@ -181,22 +222,20 @@ const TableList: React.FC<{}> = () => {
             </Dropdown>
           ),
         ]}
-        tableAlertRender={({ selectedRowKeys, selectedRows }) => (
-          <div>
-            已选择 <a style={{ fontWeight: 600 }}>{selectedRowKeys.length}</a> 项&nbsp;&nbsp;
-            {/* <span>
-              服务调用次数总计 {selectedRows.reduce((pre, item) => pre + item.callNo, 0)} 万
-            </span> */}
-          </div>
-        )}
-        request={() => getMenuList().then(({data}) => data.records)}
+        request={tableDataManage}
         columns={columns}
         rowSelection={{}}
       />
       <CreateForm onCancel={() => handleModalVisible(false)} modalVisible={createModalVisible}>
         <ProTable<menuItem, menuItem>
+          formRef={formRef}
           onSubmit={async (value) => {
-            const success = await handleAdd(value);
+            let success = false
+            if (value.id) {
+              success = await handleUpdate(value);
+            } else {
+              success = await handleAdd(value);
+            }
             if (success) {
               handleModalVisible(false);
               if (actionRef.current) {
@@ -210,27 +249,6 @@ const TableList: React.FC<{}> = () => {
           rowSelection={{}}
         />
       </CreateForm>
-      {stepFormValues && Object.keys(stepFormValues).length ? (
-        <UpdateForm
-          onSubmit={async (value) => {
-            // const success = await handleUpdate(value);
-            const success = 1
-            if (success) {
-              handleUpdateModalVisible(false);
-              setStepFormValues({});
-              if (actionRef.current) {
-                actionRef.current.reload();
-              }
-            }
-          }}
-          onCancel={() => {
-            handleUpdateModalVisible(false);
-            setStepFormValues({});
-          }}
-          updateModalVisible={updateModalVisible}
-          values={stepFormValues}
-        />
-      ) : null}
     </PageHeaderWrapper>
   );
 };

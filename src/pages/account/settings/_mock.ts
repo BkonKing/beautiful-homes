@@ -13,7 +13,7 @@ function getCity(req: Request, res: Response) {
 // 代码中会兼容本地 service mock 以及部署站点的静态数据
 export default {
   // 支持值为 Object 和 Array
-  'GET  /api/currentUser': {
+  'GET  /currentUser': {
     name: 'Serati Ma',
     avatar: 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
     userid: '00000001',
@@ -63,6 +63,6 @@ export default {
     address: '西湖区工专路 77 号',
     phone: '0752-268888888',
   },
-  'GET  /api/geographic/province': getProvince,
-  'GET  /api/geographic/city/:province': getCity,
+  'GET  /geographic/province': getProvince,
+  'GET  /geographic/city/:province': getCity,
 };
